@@ -1,6 +1,8 @@
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.BufferedReader;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -17,9 +19,14 @@ import javax.swing.JTextField;
 public class GUI extends JFrame implements ActionListener {
     //Variables Absolutas para la clase.
     private JLabel texto, texto2, texto3;
-    private JTextField caja, caja2, caja3;
+    private JTextField caja;
+    private JTextField caja2;
+    private JTextField caja3;
     private JButton boton, boton2, boton3;
     private static String cmd;
+    private static String ps;
+    private static String cm;
+
     /**
      * Constructor GUI
      * El constructor inicializa la aplicacion con el constructor super()
@@ -33,25 +40,87 @@ public class GUI extends JFrame implements ActionListener {
         inicializarComponentes();
  
     }
-    public static void openCmd(){
+    public void openCmd(){
         ProcessBuilder processBuilder = new ProcessBuilder();
         //scanner para indicar lo que queremos
-        String command = cmd.getText();
+        String command = caja.getText();
 
-
-        processBuilder.command("cmd.exe", "/k", "help", command);
+        processBuilder.command("cmd.exe", "/c", "help", command);
         //ejecutamos nuestros programas
         try {
 
             Process process = processBuilder.start();
 
             // blocked :(
+           BufferedReader reader =
+                    new BufferedReader(new InputStreamReader(process.getInputStream()));
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                System.out.println(line);
+                cmd= cmd+line+"\n";
+            }
+
+            int exitCode = process.waitFor();
+            System.out.println("\nExited with error code : " + exitCode);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+    public void OpenPs(){
+        ProcessBuilder processBuilder = new ProcessBuilder();
+                //scanner para indicar lo que queremos
+
+        String order = caja2.getText();
+            //ejecutamos nuestros programas
+        processBuilder.command("cmd.exe", "/c", "ping -n 3", order);
+
+        try {
+
+            Process process = processBuilder.start();
+
+            BufferedReader reader =                                     //usamos el CP437 para el idioma en español
+                    new BufferedReader(new InputStreamReader(process.getInputStream(), "CP437"));
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                System.out.println(line);
+                ps = ps+line+"\n";
+            }
+
+            int exitCode = process.waitFor();
+            System.out.println("\nExited with error code : " + exitCode);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+    public void openSol(){
+       
+       
+        ProcessBuilder processBuilder = new ProcessBuilder();
+        String call = caja3.getText();
+        processBuilder.command("powershell.exe", "-Command", call);   
+            //ejecutamos nuestros programas
+
+        
+
+        try {
+
+            Process process = processBuilder.start();
+
             BufferedReader reader =
                     new BufferedReader(new InputStreamReader(process.getInputStream(), "CP437"));
 
             String line;
             while ((line = reader.readLine()) != null) {
                 System.out.println(line);
+                cm = cm + line + "\n";
             }
 
             int exitCode = process.waitFor();
@@ -137,13 +206,13 @@ public class GUI extends JFrame implements ActionListener {
     @Override
 
     public void actionPerformed(ActionEvent e) {
-        /**
-         * Metodo actionPerformed()
-         * Ejecutara su contenido al producirse un cambio en el action listener del boton.
-         */
-            GUI.openCmd();
+        openCmd();
+        JOptionPane.showMessageDialog(this.boton, cmd, "Ayuda", EXIT_ON_CLOSE);
+        OpenPs();
+        JOptionPane.showMessageDialog(this.boton2, ps, "Ping de pagina", EXIT_ON_CLOSE);
+        openSol();
+        JOptionPane.showMessageDialog(this.boton3, cm, "Programa elegido" + " " + caja3.getText(), EXIT_ON_CLOSE);
 
-           // mostramos un mensaje (frame, mensaje)
 
     }
 
