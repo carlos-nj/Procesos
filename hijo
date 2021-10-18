@@ -1,0 +1,29 @@
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+
+int main(){
+    pid_t pid, hijo_pid;
+    int numero = 7;
+    int res;
+
+    pid = fork(); // cut the process in 2 using fork(), creating 2 process
+
+    if(pid == -1){//if we get -1, will pop an error
+        printf("ha ocurrido un error");
+        _exit(-1);
+    }
+    if(pid == 0){//if we get 0 we will be inside the son's process
+        res = numero + 5;
+                printf("Estoy dentro del proceso hijo. Mi pid es %d. \n\tMi padre es %d. \n\tEl resultado es: %d.", getpid(), getppid(), res);
+
+    }
+    else{
+        hijo_pid = wait(NULL);
+        res = numero - 5;
+                printf("\nEstoy dentro del proceso padre. Mi pid es %d. \n\tMi padre es %d. \n\tMi hijo %d ha terminado. \n\tEl resultado es: %d.\n", getpid(), getppid(), pid, res);
+
+    }
+    return 0;
+}
